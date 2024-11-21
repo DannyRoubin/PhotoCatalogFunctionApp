@@ -1,0 +1,111 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Catalog</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, button {
+            padding: 5px;
+            margin-top: 5px;
+        }
+
+        .response {
+            margin-top: 10px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Photo Catalog</h1>
+
+    <section>
+        <h2>Create Photo</h2>
+        <form id="photoForm">
+            <label for="photoName">Photo Name:</label>
+            <input type="text" id="photoName" required>
+            <button type="submit">Create Photo</button>
+        </form>
+        <div id="photoResponse" class="response"></div>
+    </section>
+
+    <section>
+        <h2>Create Location</h2>
+        <form id="locationForm">
+            <label for="locationName">Location Name:</label>
+            <input type="text" id="locationName" required>
+            <button type="submit">Create Location</button>
+        </form>
+        <div id="locationResponse" class="response"></div>
+    </section>
+
+    <section>
+        <h2>Create Photoshoot</h2>
+        <form id="photoshootForm">
+            <label for="photoGUID">Photo GUID:</label>
+            <input type="text" id="photoGUID" required>
+            <label for="locationID">Location ID:</label>
+            <input type="number" id="locationID" required>
+            <button type="submit">Create Photoshoot</button>
+        </form>
+        <div id="photoshootResponse" class="response"></div>
+    </section>
+
+    <script>
+        // Function to handle form submissions
+        async function handleFormSubmission(event, url, body, responseElement) {
+            event.preventDefault();
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const result = await response.json();
+                responseElement.innerText = `Success: ${JSON.stringify(result)}`;
+            } catch (error) {
+                responseElement.innerText = `Error: ${error.message}`;
+            }
+        }
+
+        document.getElementById('photoForm').addEventListener('submit', (event) => {
+            const photoName = document.getElementById('photoName').value;
+            const body = { fileName: photoName };
+            const responseElement = document.getElementById('photoResponse');
+            handleFormSubmission(event, '/photo', body, responseElement);
+        });
+
+        document.getElementById('locationForm').addEventListener('submit', (event) => {
+            const locationName = document.getElementById('locationName').value;
+            const body = { locationName: locationName };
+            const responseElement = document.getElementById('locationResponse');
+            handleFormSubmission(event, '/location', body, responseElement);
+        });
+
+        document.getElementById('photoshootForm').addEventListener('submit', (event) => {
+            const photoGUID = document.getElementById('photoGUID').value;
+            const locationID = document.getElementById('locationID').value;
+            const body = {
+                photoGUID: photoGUID,
+                location: { locationID: parseInt(locationID) }
+            };
+            const responseElement = document.getElementById('photoshootResponse');
+            handleFormSubmission(event, '/photoshoot', body, responseElement);
+        });
+    </script>
+</body>
+</html> -->
