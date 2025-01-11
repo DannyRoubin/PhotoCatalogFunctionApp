@@ -11,7 +11,7 @@ public class Main {
         String endpoint = Secrets.getEndpoint();
         String key = Secrets.getKey();
 
-        System.out.println("Running Computer Vision analysis on sample.jpg...");
+        System.out.println("Running Computer Vision analysis on sample.jpg");
         String result = ImageService.analyzeSampleImage(endpoint, key);
         System.out.println("Tags from sample.jpg: " + result);
 

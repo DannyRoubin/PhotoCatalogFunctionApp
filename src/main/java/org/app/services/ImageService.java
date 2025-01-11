@@ -5,6 +5,10 @@ import com.azure.ai.vision.imageanalysis.*;
 import com.azure.storage.blob.*;
 import com.azure.storage.blob.models.*;
 import org.app.Secrets;
+import org.app.models.ImageRequest;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -16,7 +20,7 @@ import java.util.EnumSet;
 
 public class ImageService {
 
-    public static String analyzeAndStoreImage(org.app.models.ImageRequest imageRequest) {
+    public static String analyzeAndStoreImage(ImageRequest imageRequest) {
         try {
             String tags = analyzeImage(imageRequest.getInputStream(), Secrets.getEndpoint(), Secrets.getKey());
 
@@ -27,7 +31,14 @@ public class ImageService {
                 // Upload the image to Azure Blob Storage
                 uploadImageToBlobStorage("photo-container", imageRequest.getPhotoGUID(), imageRequest.getInputStream());
 
-                return String.format("Image processed successfully. Tags: %s", tags);
+                // Send data to Lambda
+                String lambdaResult = sendDataToLambda(imageRequest.getPhotoID(), imageRequest.getPhotoGUID(), tags);
+
+                if (lambdaResult.equalsIgnoreCase("Success")) {
+                    return String.format("Image processed successfully. Tags: %s", tags);
+                } else {
+                    return String.format("Image processed, but sending data to Lambda failed. Tags: %s", tags);
+                }
             } else {
                 return "Image tagging failed. No tags with sufficient confidence.";
             }
@@ -141,4 +152,37 @@ public class ImageService {
         }
         return "No tags found or an error occurred.";
     }
+
+    public static String sendDataToLambda(String photoID, String photoGUID, String tags) {
+        try {
+            // Create the JSON payload
+            String jsonPayload = String.format("{\"photoID\":\"%s\",\"photoGUID\":\"%s\",\"tags\":\"%s\"}", photoID, photoGUID, tags);
+
+            // Create a RestTemplate for HTTP requests
+            RestTemplate restTemplate = new RestTemplate();
+
+            // Create the headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // Create the HTTP entity with the payload and headers
+            HttpEntity<String> requestEntity = new HttpEntity<>(jsonPayload, headers);
+
+            // Send the POST request
+            ResponseEntity<String> response = restTemplate.postForEntity("http://localhost:8082/api/process-image-tags", requestEntity, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                System.out.println("Data successfully sent to Lambda.");
+                return "Success";
+            } else {
+                System.err.println("Failed to send data to Lambda. Response: " + response.getBody());
+                return "Failure";
+            }
+        } catch (Exception e) {
+            System.err.println("Error sending data to Lambda: " + e.getMessage());
+            e.printStackTrace();
+            return "Failure";
+        }
+    }
 }
+
