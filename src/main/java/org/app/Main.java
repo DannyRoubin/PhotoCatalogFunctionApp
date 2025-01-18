@@ -8,12 +8,12 @@ import org.app.services.ImageService;
 public class Main {
     public static void main(String[] args) {
 
-        String endpoint = Secrets.getEndpoint();
-        String key = Secrets.getKey();
+//        String endpoint = Secrets.getEndpoint();
+//        String key = Secrets.getKey();
 
-        System.out.println("Running Computer Vision analysis on sample.jpg");
-        String result = ImageService.analyzeSampleImage(endpoint, key);
-        System.out.println("Tags from sample.jpg: " + result);
+//        System.out.println("Running Computer Vision analysis on sample.jpg");
+//        String result = ImageService.analyzeSampleImage(endpoint, key);
+//        System.out.println("Tags from sample.jpg: " + result);
 
         SpringApplication.run(Main.class, args);
 

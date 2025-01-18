@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,15 +27,25 @@ public class ImageController {
         try {
             // Debugging: Save the received image to disk
             System.out.println("Received file size: " + file.getSize() + " bytes");
-            InputStream inputStream = file.getInputStream();
-            Files.copy(inputStream, Paths.get("received_image.jpg"), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), Paths.get("received_image.jpg"), StandardCopyOption.REPLACE_EXISTING);
+
+            // Copy InputStream to ByteArrayOutputStream
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            file.getInputStream().transferTo(byteArrayOutputStream);
+            byte[] imageBytes = byteArrayOutputStream.toByteArray();
 
             // Debugging: Log content type
             System.out.println("Content Type: " + file.getContentType());
 
-            // Debugging: Pass the input stream for analysis
-            ImageRequest imageRequest = new ImageRequest(photoID, photoGUID, file.getInputStream());
-            String result = ImageService.analyzeAndStoreImage(imageRequest);
+            // Create a new InputStream for each use
+            InputStream analysisStream = new ByteArrayInputStream(imageBytes);
+            InputStream uploadStream = new ByteArrayInputStream(imageBytes);
+
+            // Create ImageRequest with analysisStream
+            ImageRequest imageRequest = new ImageRequest(photoID, photoGUID, analysisStream);
+
+            // Process the image
+            String result = ImageService.analyzeAndStoreImage(imageRequest, uploadStream);
 
             return ResponseEntity.ok(result);
 
@@ -43,5 +55,5 @@ public class ImageController {
                     .body("Error processing image: " + e.getMessage());
         }
     }
-
 }
+

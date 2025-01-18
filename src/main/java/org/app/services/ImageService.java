@@ -20,16 +20,17 @@ import java.util.EnumSet;
 
 public class ImageService {
 
-    public static String analyzeAndStoreImage(ImageRequest imageRequest) {
+    public static String analyzeAndStoreImage(ImageRequest imageRequest, InputStream uploadStream) {
         try {
+            // Perform image analysis
             String tags = analyzeImage(imageRequest.getInputStream(), Secrets.getEndpoint(), Secrets.getKey());
 
             if (tags != null && !tags.isEmpty()) {
                 System.out.println(String.format("Image processed successfully. PhotoID: %s, PhotoGUID: %s, Tags: %s",
                         imageRequest.getPhotoID(), imageRequest.getPhotoGUID(), tags));
 
-                // Upload the image to Azure Blob Storage
-                uploadImageToBlobStorage("photo-container", imageRequest.getPhotoGUID(), imageRequest.getInputStream());
+                // Upload the image to Azure Blob Storage using the second InputStream
+                uploadImageToBlobStorage("photo-container", imageRequest.getPhotoGUID(), uploadStream);
 
                 // Send data to Lambda
                 String lambdaResult = sendDataToLambda(imageRequest.getPhotoID(), imageRequest.getPhotoGUID(), tags);
@@ -48,6 +49,7 @@ public class ImageService {
             return "An error occurred: " + e.getMessage();
         }
     }
+
 
     private static String analyzeImage(InputStream inputStream, String endpoint, String key) {
         try {
@@ -92,6 +94,7 @@ public class ImageService {
 
     private static void uploadImageToBlobStorage(String containerName, String blobName, InputStream imageStream) {
         try {
+            System.out.println("Input Stream Available Bytes: " + imageStream.available());
             // Initialize BlobServiceClient with the connection string from Secrets
             BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                     .connectionString(Secrets.getBlobConnectionString())
