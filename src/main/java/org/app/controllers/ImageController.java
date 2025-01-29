@@ -25,9 +25,7 @@ public class ImageController {
             @RequestParam("photoGUID") String photoGUID,
             @RequestParam("file") MultipartFile file) {
         try {
-            // Debugging: Save the received image to disk
-            System.out.println("Received file size: " + file.getSize() + " bytes");
-            Files.copy(file.getInputStream(), Paths.get("received_image.jpg"), StandardCopyOption.REPLACE_EXISTING);
+
 
             // Copy InputStream to ByteArrayOutputStream
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -55,5 +53,27 @@ public class ImageController {
                     .body("Error processing image: " + e.getMessage());
         }
     }
+
+    @GetMapping("/image/{photoGUID}")
+    public ResponseEntity<byte[]> getImage(@PathVariable String photoGUID) {
+        try {
+            // Retrieve the image from Blob Storage
+            byte[] imageBytes = ImageService.getImageFromBlobStorage(photoGUID);
+
+            if (imageBytes != null) {
+                // Respond with the image bytes
+                return ResponseEntity.ok()
+                        .header("Content-Type", "image/jpeg") // Assuming it's a JPEG
+                        .body(imageBytes);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 }
 

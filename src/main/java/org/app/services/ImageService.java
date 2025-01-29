@@ -187,5 +187,39 @@ public class ImageService {
             return "Failure";
         }
     }
+
+    public static byte[] getImageFromBlobStorage(String photoGUID) {
+        try {
+            // Initialize BlobServiceClient using the connection string from Secrets
+            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
+                    .connectionString(Secrets.getBlobConnectionString())
+                    .buildClient();
+
+            // Access the container client
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient("photo-container");
+
+            // Get the blob client for the specific photoGUID
+            BlobClient blobClient = containerClient.getBlobClient(photoGUID);
+
+            // Check if the blob exists
+            if (!blobClient.exists()) {
+                System.err.println("Blob with GUID " + photoGUID + " does not exist.");
+                return null;
+            }
+
+            // Download the blob content to a ByteArrayOutputStream
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            blobClient.download(outputStream);
+
+            // Return the image bytes
+            return outputStream.toByteArray();
+
+        } catch (Exception e) {
+            System.err.println("Error retrieving blob with GUID " + photoGUID + ": " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }
 
