@@ -160,6 +160,7 @@ public class ImageService {
         try {
             // Create the JSON payload
             String jsonPayload = String.format("{\"photoID\":\"%s\",\"photoGUID\":\"%s\",\"tags\":\"%s\"}", photoID, photoGUID, tags);
+            System.out.println(jsonPayload);
 
             // Create a RestTemplate for HTTP requests
             RestTemplate restTemplate = new RestTemplate();
@@ -172,7 +173,9 @@ public class ImageService {
             HttpEntity<String> requestEntity = new HttpEntity<>(jsonPayload, headers);
 
             // Send the POST request
-            ResponseEntity<String> response = restTemplate.postForEntity("http://localhost:8082/api/process-image-tags", requestEntity, String.class);
+//            ResponseEntity<String> response = restTemplate.postForEntity("http://localhost:8082/api/process-image-tags", requestEntity, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity("https://wjrmbzegv5v2dumw3jga6a34bu0mhuze.lambda-url.us-east-1.on.aws/api/process-image-tags", requestEntity, String.class);
+
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 System.out.println("Data successfully sent to Lambda.");
