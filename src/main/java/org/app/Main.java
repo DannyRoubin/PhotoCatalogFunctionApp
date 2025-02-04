@@ -1,10 +1,9 @@
 package org.app;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.app.services.ImageService;
+//import org.springframework.boot.SpringApplication;
+//import org.springframework.boot.autoconfigure.SpringBootApplication;
+//import org.app.services.ImageService;
 
-@SpringBootApplication
 public class Main {
     public static void main(String[] args) {
 
@@ -15,7 +14,7 @@ public class Main {
 //        String result = ImageService.analyzeSampleImage(endpoint, key);
 //        System.out.println("Tags from sample.jpg: " + result);
 
-        SpringApplication.run(Main.class, args);
+        //SpringApplication.run(Main.class, args);
 
     }
 }

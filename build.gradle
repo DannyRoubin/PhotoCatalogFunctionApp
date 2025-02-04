@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'com.microsoft.azure.azurefunctions' version '1.8.2'  // or the latest working version
+}
+
+group = 'org.app'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Azure Function Java Library
+    implementation 'com.microsoft.azure.functions:azure-functions-java-library:1.4.2'
+
+    // Azure Blob Storage SDK (for handling blob storage)
+    implementation 'com.azure:azure-storage-blob:12.23.0'
+
+    // Azure AI Vision for image analysis
+    implementation 'com.azure:azure-ai-vision-imageanalysis:0.15.1-beta.1'
+
+    // Logging library (SLF4J)
+    //implementation 'org.slf4j:slf4j-api:2.0.7'
+
+    // Azure HTTP-Netty for better HTTP client support
+    implementation 'com.azure:azure-core-http-netty:1.13.6'
+
+    // JUnit for tests
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-Xlint:deprecation")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+azurefunctions {
+    resourceGroup = "PhotoCatalogSecondary"
+    appName = "PhotoCatalogFunctionApp"
+    region = "West US"
+    pricingTier = "Consumption"
+
+    runtime {
+        os = "linux"
+        javaVersion = "21"
+    }
+}
