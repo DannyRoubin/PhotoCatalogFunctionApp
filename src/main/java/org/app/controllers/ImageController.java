@@ -12,35 +12,47 @@ import org.app.services.ImageService;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.Map;
 
 public class ImageController {
 
 
     @FunctionName("processImage")
     public HttpResponseMessage processImage(
-            @HttpTrigger(name = "req", methods = {HttpMethod.POST}, authLevel = AuthorizationLevel.FUNCTION)
-            HttpRequestMessage<Optional<String>> request,
+            @HttpTrigger(name = "req", methods = {HttpMethod.POST}, authLevel = AuthorizationLevel.FUNCTION, route = "process-image")
+            HttpRequestMessage<byte[]> request,
             final ExecutionContext context) {
+
         try {
-            // Log function execution
             context.getLogger().info("Executing processImage function");
 
-            // Extract parameters from the request
-            String photoID = request.getQueryParameters().get("photoID");
-            String photoGUID = request.getQueryParameters().get("photoGUID");
-            String fileContent = request.getBody().orElseThrow(() -> new IllegalArgumentException("File content is missing"));
+            // Read the request body (raw bytes)
+            byte[] requestBody = request.getBody();
+            if (requestBody == null || requestBody.length == 0) {
+                return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                        .body("Request body is empty or missing")
+                        .build();
+            }
 
-            // Convert file content to byte array
-            byte[] imageBytes = fileContent.getBytes();
+            // Extract parameters from query (assuming they are sent as form fields)
+            Map<String, String> queryParams = request.getQueryParameters();
+            String photoID = queryParams.get("photoID");
+            String photoGUID = queryParams.get("photoGUID");
 
-            // Create a new InputStream for each use
-            InputStream analysisStream = new ByteArrayInputStream(imageBytes);
-            InputStream uploadStream = new ByteArrayInputStream(imageBytes);
+            if (photoID == null || photoGUID == null) {
+                return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                        .body("Missing required parameters: photoID or photoGUID")
+                        .build();
+            }
 
-            // Create ImageRequest with analysisStream
+            // Convert image bytes to InputStream
+            InputStream analysisStream = new ByteArrayInputStream(requestBody);
+            InputStream uploadStream = new ByteArrayInputStream(requestBody);
+
+            // Create ImageRequest object
             ImageRequest imageRequest = new ImageRequest(photoID, photoGUID, analysisStream);
 
-            // Process the image
+            // Call ImageService to process and store the image
             String result = ImageService.analyzeAndStoreImage(imageRequest, uploadStream);
 
             return request.createResponseBuilder(HttpStatus.OK).body(result).build();
@@ -51,6 +63,7 @@ public class ImageController {
                     .body("Error processing image: " + e.getMessage()).build();
         }
     }
+
 
     @FunctionName("getImage")
     public HttpResponseMessage getImage(
